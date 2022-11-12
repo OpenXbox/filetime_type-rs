@@ -1,0 +1,10 @@
+[package]
+name = "filetime_type"
+version = "0.1.0"
+edition = "2021"
+description = "Platform agnostic FILETIME conversion"
+license = "MIT"
+repository = "https://github.com/OpenXbox/filetime_type-rs"
+homepage = "https://openxbox.org"
+
+[dependencies]
