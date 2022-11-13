@@ -10,8 +10,6 @@ An independent FILETIME parsing / conversion crate
 The need for this came up when attempting to parse raw FILETIME structures
 from binary files.
 
-Be aware: It certainly has it's quirks when receiving unexpected/invalid input!
-
 ## Quickstart
 
 ```rs

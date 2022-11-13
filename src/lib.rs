@@ -3,8 +3,6 @@
 //! The need for this came up when attempting to parse raw FILETIME structures
 //! from binary files.
 //!
-//! Be aware: It certainly has it's quirks when receiving unexpected/invalid input!
-//!
 //! ## Quickstart
 //!
 //! ```
@@ -36,7 +34,7 @@ use std::fmt;
 /// FILETIME type
 ///
 /// Used by Microsoft software to describe file creation/access timestamps
-/// In contrary to unix, the FILETIME-Epoch is: 1601-01-01-00:00:00.000Z
+/// In contrary to unix, the FILETIME-Epoch is: 1601-01-01T00:00:00.000000000Z
 ///
 /// Allows conversion between:
 /// - Raw i64 value
@@ -49,12 +47,15 @@ pub struct FileTime {
 
 impl FileTime {
     /// January 1, 1970 as MS file time
-    /// aka. 100 of nanoseconds since 1601-01-01-00:00:00.000Z
+    /// aka. 100 of nanoseconds since 1601-01-01T00:00:00.000000000Z
     const EPOCH_AS_FILETIME: i64 = 116444736000000000;
     const HUNDREDS_OF_NANOSECONDS: i64 = 10000000;
 
-    /// Construct new FileTime by providing seconds and nanoseconds since 1601-01-01-00:00:00.000Z
+    /// Construct new FileTime by providing seconds and nanoseconds since 1601-01-01T00:00:00.000000000Z
     pub fn new(secs: i64, nsecs: i64) -> Self {
+        assert!(secs > 0, "Positive seconds required");
+        assert!(nsecs > 0, "Positive nanoseconds required");
+
         Self { secs, nsecs }
     }
 
@@ -93,10 +94,11 @@ impl FileTime {
     /// ```
     /// use filetime_type::FileTime;
     ///
-    /// // 2009-07-25T23:00:00.0000Z
+    /// // 2009-07-25T23:00:00.000001000Z
     /// let ft = FileTime::from_i64(128930364000001000);
     /// ```
     pub fn from_i64(filetime: i64) -> Self {
+        assert!(filetime >= 0, "Only positive values allowed");
         let secs: i64 = filetime / Self::HUNDREDS_OF_NANOSECONDS;
         let nsecs: i64 = filetime % Self::HUNDREDS_OF_NANOSECONDS;
 
@@ -183,25 +185,15 @@ mod test {
 
     #[test]
     fn from_datetime() {
-        let dt = Utc
-            .with_ymd_and_hms(2009, 7, 25, 23, 0, 0)
-            .unwrap()
-            .checked_add_signed(Duration::nanoseconds(1000))
-            .unwrap();
+        let dt = Utc.from_utc_datetime(
+            &DateTime::parse_from_rfc3339("2009-07-25T23:00:00.000001000Z")
+                .unwrap()
+                .naive_utc(),
+        );
         assert_eq!(
             FileTime::from_datetime(dt),
             FileTime::from_i64(128930364000001000)
         );
-    }
-
-    #[test]
-    fn filetime_epoch() {
-        let ft_epoch = FileTime::from_i64(0);
-        assert_eq!(
-            Utc.with_ymd_and_hms(1601, 1, 1, 0, 0, 0).unwrap(),
-            ft_epoch.to_datetime()
-        );
-        assert_eq!(ft_epoch.to_datetime(), FileTime::filetime_epoch());
     }
 
     #[test]
@@ -233,5 +225,58 @@ mod test {
         let bytes = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
         let ft: [u8; 8] = FileTime { secs: 0, nsecs: 0 }.into();
         assert_eq!(ft, bytes);
+    }
+
+    #[test]
+    fn min_filetime() {
+        let ft_epoch = FileTime::from_i64(0);
+        assert_eq!(
+            DateTime::parse_from_rfc3339("1601-01-01T00:00:00.000000000Z").unwrap(),
+            ft_epoch.to_datetime()
+        );
+        assert_eq!(ft_epoch.to_datetime(), FileTime::filetime_epoch());
+    }
+
+    #[test]
+    fn max_filetime() {
+        let ft = FileTime::from_i64(0x7FFF_FFFF_FFFF_FFFF);
+        let dt = Utc
+            .with_ymd_and_hms(30828, 09, 14, 02, 48, 05)
+            .unwrap()
+            .checked_add_signed(Duration::nanoseconds(4775807))
+            .unwrap();
+        assert_eq!(ft.to_datetime(), dt);
+    }
+
+    #[test]
+    fn filetime_one() {
+        let ft = FileTime::from_i64(1);
+        assert_eq!(ft.seconds(), 0);
+        assert_eq!(ft.nanoseconds(), 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn filetime_panic_invalid_i64() {
+        FileTime::from_i64(-1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn filetime_panic_invalid_new() {
+        FileTime::new(-1, 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn filetime_panic_invalid_new2() {
+        FileTime::new(0, -1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn filetime_panic_from_bytes() {
+        let val: i64 = -1;
+        let _ = FileTime::from(val.to_le_bytes());
     }
 }
