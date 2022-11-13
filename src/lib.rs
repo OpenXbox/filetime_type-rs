@@ -241,7 +241,7 @@ mod test {
     fn max_filetime() {
         let ft = FileTime::from_i64(0x7FFF_FFFF_FFFF_FFFF);
         let dt = Utc
-            .with_ymd_and_hms(30828, 09, 14, 02, 48, 05)
+            .with_ymd_and_hms(30828, 9, 14, 2, 48, 5)
             .unwrap()
             .checked_add_signed(Duration::nanoseconds(4775807))
             .unwrap();
