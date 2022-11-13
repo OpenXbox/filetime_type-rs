@@ -10,6 +10,8 @@ An independent FILETIME parsing / conversion crate
 The need for this came up when attempting to parse raw FILETIME structures
 from binary files.
 
+Be aware: It certainly has it's quirks when receiving unexpected/invalid input!
+
 ## Quickstart
 
 ```rs
@@ -26,14 +28,14 @@ println!("Since FILETIME-Epoch: secs: {} leap-nanosecs: {}",
     ft_i64.nanoseconds());
 
 // Parsing from raw bytes
-let raw_filetime = [0xCE, 0xEB, 0x7D, 0x1A, 0x61, 0x59, 0xCE, 0x01];
-let ft = FileTime::from_i64(i64::from_le_bytes(raw_filetime));
-let ft2: i64 = ft.filetime();
+let raw_filetime: [u8; 8] = [0xCE, 0xEB, 0x7D, 0x1A, 0x61, 0x59, 0xCE, 0x01];
+let ft = FileTime::from(raw_filetime);
+ 
+// Into raw bytes
+let raw: [u8; 8] = FileTime::now().into();
 
 // Parsing from DateTime<Utc>
-let dt: DateTime<Utc> = Utc::now();
-let ft_dt = FileTime::from_datetime(dt);
-let dt2: DateTime<Utc> = ft_dt.to_datetime();
+let ft_dt = FileTime::from_datetime(Utc::now());
 ```
 
 ## Add to your project
