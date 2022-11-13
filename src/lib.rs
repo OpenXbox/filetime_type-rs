@@ -86,6 +86,30 @@ impl FileTime {
     }
 }
 
+impl From<i64> for FileTime {
+    fn from(val: i64) -> Self {
+        Self::from_i64(val)
+    }
+}
+
+impl From<DateTime<Utc>> for FileTime {
+    fn from(dt: DateTime<Utc>) -> Self {
+        Self::from_datetime(dt)
+    }
+}
+
+impl From<FileTime> for i64 {
+    fn from(ft: FileTime) -> Self {
+        ft.filetime()
+    }
+}
+
+impl From<FileTime> for DateTime<Utc> {
+    fn from(ft: FileTime) -> Self {
+        ft.to_datetime()
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
