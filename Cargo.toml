@@ -8,3 +8,4 @@ repository = "https://github.com/OpenXbox/filetime_type-rs"
 homepage = "https://openxbox.org"
 
 [dependencies]
+chrono = "0.4.23"
