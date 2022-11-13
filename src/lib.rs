@@ -1,5 +1,41 @@
+//! An independent FILETIME parsing / conversion crate
+//!
+//! The need for this came up when attempting to parse raw FILETIME structures
+//! from binary files.
+//!
+//! ## Quickstart
+//!
+//! ```
+//! use filetime_type::FileTime;
+//! use chrono::{DateTime, Utc};
+//!
+//! // Parsing from i64
+//! let ft_i64 = FileTime::from_i64(128930364000001000);
+//! println!("Since FILETIME-Epoch: secs: {} leap-nanosecs: {}",
+//!     ft_i64.seconds(),
+//!     ft_i64.nanoseconds());
+//!
+//! // Parsing from raw bytes
+//! let raw_filetime = [0xCE, 0xEB, 0x7D, 0x1A, 0x61, 0x59, 0xCE, 0x01];
+//! let ft = FileTime::from_i64(i64::from_le_bytes(raw_filetime));
+//! let ft2: i64 = ft.filetime();
+//!
+//! // Parsing from DateTime<Utc>
+//! let dt: DateTime<Utc> = Utc::now();
+//! let ft_dt = FileTime::from_datetime(dt);
+//! let dt2: DateTime<Utc> = ft_dt.to_datetime();
+//! ```
 use chrono::{prelude::*, Duration};
+use std::fmt;
 
+/// FILETIME type
+///
+/// Used by Microsoft software to describe file creation/access timestamps
+/// In contrary to unix, the FILETIME-Epoch is: 1601-01-01-00:00:00.000Z
+///
+/// Allows conversion between:
+/// - Raw i64 value
+/// - DateTime UTC
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub struct FileTime {
     secs: i64,
@@ -15,6 +51,16 @@ impl FileTime {
     /// Construct new FileTime by providing seconds and nanoseconds since 1601-01-01-00:00:00.000Z
     pub fn new(secs: i64, nsecs: i64) -> Self {
         Self { secs, nsecs }
+    }
+
+    /// Seconds since FILETIME-Epoch
+    pub fn seconds(&self) -> i64 {
+        self.secs
+    }
+
+    /// Leap Nanoseconds since FILETIME-Epoch
+    pub fn nanoseconds(&self) -> i64 {
+        self.nsecs
     }
 
     /// Return FILETIME as i64
@@ -83,6 +129,12 @@ impl FileTime {
     /// ```
     pub fn to_datetime(&self) -> DateTime<Utc> {
         Self::filetime_epoch() + Duration::seconds(self.secs) + Duration::nanoseconds(self.nsecs)
+    }
+}
+
+impl fmt::Display for FileTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_fmt(format_args!("DateTime {}", self.to_datetime()))
     }
 }
 
