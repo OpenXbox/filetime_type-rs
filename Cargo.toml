@@ -1,6 +1,6 @@
 [package]
 name = "filetime_type"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2018"
 description = "Platform agnostic FILETIME conversion"
 license = "MIT"
