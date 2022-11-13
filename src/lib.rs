@@ -9,6 +9,9 @@
 //! use filetime_type::FileTime;
 //! use chrono::{DateTime, Utc};
 //!
+//! // Create FileTime from current system time
+//! let ft_now = FileTime::now();
+//!
 //! // Parsing from i64
 //! let ft_i64 = FileTime::from_i64(128930364000001000);
 //! println!("Since FILETIME-Epoch: secs: {} leap-nanosecs: {}",
@@ -51,6 +54,11 @@ impl FileTime {
     /// Construct new FileTime by providing seconds and nanoseconds since 1601-01-01-00:00:00.000Z
     pub fn new(secs: i64, nsecs: i64) -> Self {
         Self { secs, nsecs }
+    }
+
+    /// Creates a new timestamp representing the current system time
+    pub fn now() -> Self {
+        Utc::now().into()
     }
 
     /// Seconds since FILETIME-Epoch

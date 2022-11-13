@@ -16,6 +16,9 @@ from binary files.
 use filetime_type::FileTime;
 use chrono::{DateTime, Utc};
 
+// Create FileTime from current system time
+let ft_now = FileTime::now();
+
 // Parsing from i64
 let ft_i64 = FileTime::from_i64(128930364000001000);
 println!("Since FILETIME-Epoch: secs: {} leap-nanosecs: {}",
@@ -35,9 +38,10 @@ let dt2: DateTime<Utc> = ft_dt.to_datetime();
 
 ## Add to your project
 
+Add the following line to your `Cargo.toml` file.
+
 ```toml
 [dependencies]
-..
 filetime_type = "0.1"
 ```
 
