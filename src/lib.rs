@@ -100,7 +100,7 @@ impl FileTime {
     pub fn from_i64(filetime: i64) -> Self {
         assert!(filetime >= 0, "Only positive values allowed");
         let secs: i64 = filetime / Self::HUNDREDS_OF_NANOSECONDS;
-        let nsecs: i64 = filetime % Self::HUNDREDS_OF_NANOSECONDS;
+        let nsecs: i64 = filetime % Self::HUNDREDS_OF_NANOSECONDS * 100;
 
         Self { secs, nsecs }
     }
