@@ -81,7 +81,7 @@ impl FileTime {
     /// let ft_i64 = FileTime::now().filetime();
     /// ```
     pub fn filetime(&self) -> i64 {
-        (self.secs * Self::HUNDREDS_OF_NANOSECONDS) + self.nsecs
+        (self.secs * Self::HUNDREDS_OF_NANOSECONDS) + self.nsecs.checked_div(100).unwrap_or(0)
     }
 
     /// Return FILETIME epoch as DateTime<Utc>
@@ -100,7 +100,7 @@ impl FileTime {
     pub fn from_i64(filetime: i64) -> Self {
         assert!(filetime >= 0, "Only positive values allowed");
         let secs: i64 = filetime / Self::HUNDREDS_OF_NANOSECONDS;
-        let nsecs: i64 = filetime % Self::HUNDREDS_OF_NANOSECONDS;
+        let nsecs: i64 = filetime % Self::HUNDREDS_OF_NANOSECONDS * 100;
 
         Self { secs, nsecs }
     }
@@ -115,7 +115,7 @@ impl FileTime {
     pub fn from_datetime(dt: DateTime<Utc>) -> Self {
         let nsecs = Self::EPOCH_AS_FILETIME
             + (dt.timestamp() * Self::HUNDREDS_OF_NANOSECONDS)
-            + dt.timestamp_subsec_nanos() as i64;
+            + dt.timestamp_subsec_nanos().checked_div(100).unwrap_or(0) as i64;
         Self::from_i64(nsecs)
     }
 
@@ -186,13 +186,13 @@ mod test {
     #[test]
     fn from_datetime() {
         let dt = Utc.from_utc_datetime(
-            &DateTime::parse_from_rfc3339("2009-07-25T23:00:00.000001000Z")
+            &DateTime::parse_from_rfc3339("2009-07-25T23:00:00.0001Z")
                 .unwrap()
                 .naive_utc(),
         );
         assert_eq!(
-            FileTime::from_datetime(dt),
-            FileTime::from_i64(128930364000001000)
+            dt,
+            FileTime::from_i64(128930364000001000).into()
         );
     }
 
@@ -204,7 +204,7 @@ mod test {
             ft,
             FileTime {
                 secs: 13013971283,
-                nsecs: 1482830
+                nsecs: 148283000
             }
         );
     }
@@ -214,7 +214,7 @@ mod test {
         let bytes = [0xCE_u8, 0xEB, 0x7D, 0x1A, 0x61, 0x59, 0xCE, 0x01];
         let ft: [u8; 8] = FileTime {
             secs: 13013971283,
-            nsecs: 1482830,
+            nsecs: 148283000,
         }
         .into();
         assert_eq!(ft, bytes);
@@ -243,7 +243,7 @@ mod test {
         let dt = Utc
             .with_ymd_and_hms(30828, 9, 14, 2, 48, 5)
             .unwrap()
-            .checked_add_signed(Duration::nanoseconds(4775807))
+            .checked_add_signed(Duration::nanoseconds(477580700))
             .unwrap();
         assert_eq!(ft.to_datetime(), dt);
     }
@@ -252,7 +252,7 @@ mod test {
     fn filetime_one() {
         let ft = FileTime::from_i64(1);
         assert_eq!(ft.seconds(), 0);
-        assert_eq!(ft.nanoseconds(), 1);
+        assert_eq!(ft.nanoseconds(), 100);
     }
 
     #[test]
