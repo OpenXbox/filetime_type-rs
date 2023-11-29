@@ -186,13 +186,13 @@ mod test {
     #[test]
     fn from_datetime() {
         let dt = Utc.from_utc_datetime(
-            &DateTime::parse_from_rfc3339("2009-07-25T23:00:00.000001000Z")
+            &DateTime::parse_from_rfc3339("2009-07-25T23:00:00.0001Z")
                 .unwrap()
                 .naive_utc(),
         );
         assert_eq!(
-            FileTime::from_datetime(dt),
-            FileTime::from_i64(128930364000001000)
+            dt,
+            FileTime::from_i64(128930364000001000).into()
         );
     }
 
@@ -204,7 +204,7 @@ mod test {
             ft,
             FileTime {
                 secs: 13013971283,
-                nsecs: 1482830
+                nsecs: 148283000
             }
         );
     }
@@ -243,7 +243,7 @@ mod test {
         let dt = Utc
             .with_ymd_and_hms(30828, 9, 14, 2, 48, 5)
             .unwrap()
-            .checked_add_signed(Duration::nanoseconds(4775807))
+            .checked_add_signed(Duration::nanoseconds(477580700))
             .unwrap();
         assert_eq!(ft.to_datetime(), dt);
     }
@@ -252,7 +252,7 @@ mod test {
     fn filetime_one() {
         let ft = FileTime::from_i64(1);
         assert_eq!(ft.seconds(), 0);
-        assert_eq!(ft.nanoseconds(), 1);
+        assert_eq!(ft.nanoseconds(), 100);
     }
 
     #[test]
