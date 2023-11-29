@@ -81,7 +81,7 @@ impl FileTime {
     /// let ft_i64 = FileTime::now().filetime();
     /// ```
     pub fn filetime(&self) -> i64 {
-        (self.secs * Self::HUNDREDS_OF_NANOSECONDS) + self.nsecs
+        (self.secs * Self::HUNDREDS_OF_NANOSECONDS) + self.nsecs.checked_div(100).unwrap_or(0)
     }
 
     /// Return FILETIME epoch as DateTime<Utc>
@@ -115,7 +115,7 @@ impl FileTime {
     pub fn from_datetime(dt: DateTime<Utc>) -> Self {
         let nsecs = Self::EPOCH_AS_FILETIME
             + (dt.timestamp() * Self::HUNDREDS_OF_NANOSECONDS)
-            + dt.timestamp_subsec_nanos() as i64;
+            + dt.timestamp_subsec_nanos().checked_div(100).unwrap_or(0) as i64;
         Self::from_i64(nsecs)
     }
 
@@ -214,7 +214,7 @@ mod test {
         let bytes = [0xCE_u8, 0xEB, 0x7D, 0x1A, 0x61, 0x59, 0xCE, 0x01];
         let ft: [u8; 8] = FileTime {
             secs: 13013971283,
-            nsecs: 1482830,
+            nsecs: 148283000,
         }
         .into();
         assert_eq!(ft, bytes);
