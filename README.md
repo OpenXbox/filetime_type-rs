@@ -10,31 +10,9 @@ An independent FILETIME parsing / conversion crate
 The need for this came up when attempting to parse raw FILETIME structures
 from binary files.
 
-## Quickstart
+## Documentation
 
-```rs
-use filetime_type::FileTime;
-use chrono::{DateTime, Utc};
-
-// Create FileTime from current system time
-let ft_now = FileTime::now();
-
-// Parsing from i64
-let ft_i64 = FileTime::from_i64(128930364000001000);
-println!("Since FILETIME-Epoch: secs: {} leap-nanosecs: {}",
-    ft_i64.seconds(),
-    ft_i64.nanoseconds());
-
-// Parsing from raw bytes
-let raw_filetime: [u8; 8] = [0xCE, 0xEB, 0x7D, 0x1A, 0x61, 0x59, 0xCE, 0x01];
-let ft = FileTime::from(raw_filetime);
- 
-// Into raw bytes
-let raw: [u8; 8] = FileTime::now().into();
-
-// Parsing from DateTime<Utc>
-let ft_dt = FileTime::from_datetime(Utc::now());
-```
+Please see: <https://docs.rs/filetime_type>
 
 ## Add to your project
 
@@ -45,6 +23,6 @@ Add the following line to your `Cargo.toml` file.
 filetime_type = "0.1"
 ```
 
+## Related projects / crates
 
-Documentation: <https://docs.rs/filetime_type>
-
+- [nt-time](https://crates.io/crates/nt-time) - Does serve the same purpose + serde support + more tests
