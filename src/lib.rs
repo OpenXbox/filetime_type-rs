@@ -81,7 +81,7 @@ impl FileTime {
     /// let ft_i64 = FileTime::now().filetime();
     /// ```
     pub fn filetime(&self) -> i64 {
-        (self.secs * Self::HUNDREDS_OF_NANOSECONDS) + self.nsecs.checked_div(100).unwrap_or(0)
+        (self.secs * Self::HUNDREDS_OF_NANOSECONDS) + self.nsecs / 100
     }
 
     /// Return FILETIME epoch as DateTime<Utc>
@@ -115,7 +115,7 @@ impl FileTime {
     pub fn from_datetime(dt: DateTime<Utc>) -> Self {
         let nsecs = Self::EPOCH_AS_FILETIME
             + (dt.timestamp() * Self::HUNDREDS_OF_NANOSECONDS)
-            + dt.timestamp_subsec_nanos().checked_div(100).unwrap_or(0) as i64;
+            + (dt.timestamp_subsec_nanos() / 100) as i64;
         Self::from_i64(nsecs)
     }
 
